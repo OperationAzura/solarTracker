@@ -1,6 +1,8 @@
 import time
 import _thread
 import machine
+from machine import Pin
+from machine import PWM
 from machine import ADC
 from math import sqrt
 #machine.freq(80000000)
@@ -75,15 +77,15 @@ def run():
     deadZone = 5
     signalDifference = 0
     x = 0
-    while x < 10:
+    while x < 100:
         x += 1
         r = ReadSensor(solarSensorRight, 5)
         l = ReadSensor(solarSensorLeft, 5)
-        print( 'right sensor: ', r)
-        print('left sensor: ', l)
+        print( 'Right sensor: ', r)
+        print('Left sensor: ', l)
         dif = abs(r - l)
         #print('dif: ', dif)
-        time.sleep(1)
+        time.sleep(0.1)
         if False:
             sensorReadingR = ReadSensor(solarSensorRight)
             sensorReadingL = ReadSensor(solarSensorLeft)
