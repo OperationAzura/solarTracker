@@ -1,3 +1,4 @@
+import time
 import _thread
 import machine
 from machine import ADC
