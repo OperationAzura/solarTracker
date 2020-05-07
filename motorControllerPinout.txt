@@ -1,0 +1,14 @@
+top lefrt 
+out 1
+bottm 
+out 2
+
+across bottom starting at the left
++12V
+GND
++5V
+
+Pins
+ENA
+N1
+N2
