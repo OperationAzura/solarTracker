@@ -4,12 +4,22 @@ import machine
 from machine import Pin
 from machine import PWM
 from machine import ADC
+from machine import Timer
+import machine
 from math import sqrt
 #machine.freq(80000000)
 print(machine.freq())
 time.sleep(1)
 
 #Solar tracking stuff below
+
+#restart timer, so auto updates will be checked
+restartTimer = Timer(0)
+#restartHandler for handling the timer
+def restartHandler(timer):
+    machine.reset()
+#initialize the timer
+timer.init(period=10000, mode=Timer.PERIODIC, callback=restartHandler)
 
 #Pin Setup
 #For motor controller
@@ -18,6 +28,8 @@ motorPowerPin = Pin(13, Pin.OUT) #ENA pin, not picked out yet Pin(2, Pin.OUT)
 motorPowerPWM = PWM(motorPowerPin)
 motorPowerPWM.freq(500) #undecided
 motorPowerPWM.duty(0) #undecided
+
+dutyCycle = 800 # value between 0 and 023
 
 #onPin1 sends a signal to the motor controller, pin N!, to move the motor one way 
 onPin1 = Pin(12, Pin.OUT) #N1, undecided Pin(2, Pin.OUT)
@@ -44,6 +56,8 @@ def motorTest():
     time.sleep(1)
     onPin2.value(0)
     motorPowerPWM.duty(0)
+
+motorTest()
 
 #Mean will get the mean of the samples
 #currently unused for reducing signal erros
@@ -74,25 +88,26 @@ def run():
     #runing motor test
     #motorTest()
     #start of solarTracking loop  
-    deadZone = 5
+    deadZone = 15
     signalDifference = 0
-    x = 0
-    while x < 100:
-        x += 1
-        r = ReadSensor(solarSensorRight, 5)
-        l = ReadSensor(solarSensorLeft, 5)
-        print( 'Right sensor: ', r)
-        print('Left sensor: ', l)
-        dif = abs(r - l)
-        #print('dif: ', dif)
-        time.sleep(0.1)
-        if False:
-            sensorReadingR = ReadSensor(solarSensorRight)
-            sensorReadingL = ReadSensor(solarSensorLeft)
+    while true:
+        sensorReadingR = ReadSensor(solarSensorRight)
+        sensorReadingL = ReadSensor(solarSensorLeft)
 
-            signalDifference = abs(sensorReadingL - sensorReadingL)
-            #debug! checking for 0s
-            if sensorReadingR == 0:
-                print('right sensor is 0!!!')
-            if sensorReadingL == 0:
-                print('left sensor is 0!!!')
+        signalDifference = abs(sensorReadingL - sensorReadingL)
+        if signalDifference > deadZone:
+            if sensorReadingL > sensorReadingR:
+                #move motor
+                onPin2.value(0)#make sure pin 2 is low
+                onPin1.value(1)#make sure pin 1 is high
+                motorPowerPWM.duty(dutyCycle) # power the pwm
+            if sensorReadingL < sensorReadingR:
+                #move motor
+                onPin1.value(0)#make sure pin 2 is low
+                onPin2.value(1)#make sure pin 1 is high
+                motorPowerPWM.duty(dutyCycle) # power the pwm
+        else: 
+            #set motor controls to zero and wait for a bit
+            onPin2.value(0)#make sure pin 2 is low
+            onPin1.value(0)#make sure pin 1 is high
+            motorPowerPWM.duty(0) # power the pwm
