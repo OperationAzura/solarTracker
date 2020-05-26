@@ -7,6 +7,10 @@ from machine import ADC
 from machine import Timer
 import machine
 from math import sqrt
+
+import webrepl
+webrepl.start()
+
 #machine.freq(80000000)
 print(machine.freq())
 time.sleep(1)
