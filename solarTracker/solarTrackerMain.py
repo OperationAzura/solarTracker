@@ -17,9 +17,10 @@ time.sleep(1)
 restartTimer = Timer(0)
 #restartHandler for handling the timer
 def restartHandler(timer):
+    print('RESTARTING!!!')
+    time.sleep(1)
     machine.reset()
 #initialize the timer
-timer.init(period=10000, mode=Timer.PERIODIC, callback=restartHandler)
 
 #Pin Setup
 #For motor controller
@@ -85,28 +86,39 @@ def ReadSensor(sensor, count):
 
 #run will be called from main, and run the solar tracking program
 def run():
+    restartTimer.init(period=100000, mode=Timer.PERIODIC, callback=restartHandler)
+
     #runing motor test
-    #motorTest()
+    motorTest()
     #start of solarTracking loop  
     deadZone = 15
     signalDifference = 0
-    while true:
-        sensorReadingR = ReadSensor(solarSensorRight)
-        sensorReadingL = ReadSensor(solarSensorLeft)
+    c = 100
+    x = 0
+    while x < c:
+        x += 1
+        sensorReadingR = ReadSensor(solarSensorRight, 5)
+        sensorReadingL = ReadSensor(solarSensorLeft, 5)
 
+        print('right: ', sensorReadingR)
+        print('left: ', sensorReadingL)
         signalDifference = abs(sensorReadingL - sensorReadingL)
+        print('diff: ', signalDifference)
         if signalDifference > deadZone:
             if sensorReadingL > sensorReadingR:
                 #move motor
+                print('L > R')
                 onPin2.value(0)#make sure pin 2 is low
                 onPin1.value(1)#make sure pin 1 is high
                 motorPowerPWM.duty(dutyCycle) # power the pwm
             if sensorReadingL < sensorReadingR:
                 #move motor
+                print('L < R')
                 onPin1.value(0)#make sure pin 2 is low
                 onPin2.value(1)#make sure pin 1 is high
                 motorPowerPWM.duty(dutyCycle) # power the pwm
         else: 
+            print('else')
             #set motor controls to zero and wait for a bit
             onPin2.value(0)#make sure pin 2 is low
             onPin1.value(0)#make sure pin 1 is high
