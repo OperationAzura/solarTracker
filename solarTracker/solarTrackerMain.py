@@ -15,6 +15,13 @@ webrepl.start()
 print(machine.freq())
 time.sleep(1)
 
+
+def logToFile(s):
+    f = open('log.log', 'a+')
+    f.write(s)
+    f.write('\n')
+    f.close()
+    
 #Solar tracking stuff below
 
 #restart timer, so auto updates will be checked
@@ -90,14 +97,14 @@ def ReadSensor(sensor, count):
 
 #run will be called from main, and run the solar tracking program
 def run():
-    restartTimer.init(period=100000, mode=Timer.PERIODIC, callback=restartHandler)
+    restartTimer.init(period=100000000, mode=Timer.PERIODIC, callback=restartHandler)
 
     #runing motor test
     motorTest()
     #start of solarTracking loop  
     deadZone = 15
     signalDifference = 0
-    c = 100
+    c = 10000
     x = 0
     while x < c:
         x += 1
@@ -106,24 +113,43 @@ def run():
 
         print('right: ', sensorReadingR)
         print('left: ', sensorReadingL)
-        signalDifference = abs(sensorReadingL - sensorReadingL)
+        signalDifference = abs(sensorReadingR - sensorReadingL)
         print('diff: ', signalDifference)
         if signalDifference > deadZone:
             if sensorReadingL > sensorReadingR:
+                s = 'L: ' + str(sensorReadingL) + ' > R: ' + str(sensorReadingR)
+                logToFile(s)
+                s = 'XXXXX turning onPin1'
+                logToFile(s)
+                
                 #move motor
                 print('L > R')
                 onPin2.value(0)#make sure pin 2 is low
                 onPin1.value(1)#make sure pin 1 is high
                 motorPowerPWM.duty(dutyCycle) # power the pwm
+                time.sleep(0.1)
             if sensorReadingL < sensorReadingR:
+                s = 'R: ' + str(sensorReadingR) + ' > L: ' + str(sensorReadingL)
+                logToFile(s)
+                s = 'XXXXX turning onPin2'
+                logToFile(s)
+                
+                #
                 #move motor
                 print('L < R')
                 onPin1.value(0)#make sure pin 2 is low
                 onPin2.value(1)#make sure pin 1 is high
                 motorPowerPWM.duty(dutyCycle) # power the pwm
+                time.sleep(0.1)
         else: 
             print('else')
             #set motor controls to zero and wait for a bit
             onPin2.value(0)#make sure pin 2 is low
             onPin1.value(0)#make sure pin 1 is high
             motorPowerPWM.duty(0) # power the pwm
+            s = 'L: ' + str(sensorReadingL) + ' =kinda= R: ' + str(sensorReadingR)
+            logToFile(s)
+            s = 'XXXXX power down both pins'
+            logToFile(s)
+            #
+            time.sleep(300)
